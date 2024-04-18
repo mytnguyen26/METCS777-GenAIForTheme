@@ -7,3 +7,6 @@ datasets
 diffusers
 sentence-transformers
 accelerate
+pillow
+torchvision
+transformers
