@@ -1,0 +1,12 @@
+boto3
+sagemaker
+python-dotenv
+pyspark
+pandas
+datasets
+diffusers
+sentence-transformers
+accelerate
+pillow
+torchvision
+transformers
