@@ -1,0 +1,30 @@
+version: 2
+model:
+  unet:
+    name: "runwayml/stable-diffusion-v1-5"
+    subfolder: "unet"
+  vae:
+    name: "runwayml/stable-diffusion-v1-5"
+    subfolder: "vae"
+  clip:
+    name: "runwayml/stable-diffusion-v1-5"
+    subfolder: "text_encoder"
+  tokenizer:
+    name: "runwayml/stable-diffusion-v1-5"
+    subfolder: "tokenizer"
+  noise_scheduler:
+    name: "PNDMScheduler"
+    args:
+      num_train_timesteps: 1500
+      steps_offset: 1
+data:
+  path: "/content/drive/MyDrive/projects/metcs777/train_set_large_Harward_Metroplitan_Smithsonian/"
+  # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
+  type: "parquet"
+training:
+  learning_rate: 0.01
+  batch_size: 4
+  epochs: 10
+  max_train_steps: 200
+output:
+  model: "/content/drive/MyDrive/projects/metcs777/output/"
