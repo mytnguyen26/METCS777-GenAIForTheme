@@ -10,3 +10,4 @@ accelerate
 pillow
 torchvision
 transformers
+tqdm
