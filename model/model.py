@@ -16,6 +16,7 @@ from diffusers import (
 )
 from transformers import (
     CLIPTextModel,
+    CLIPTokenizer,
     CLIPFeatureExtractor
 )
 import torch
@@ -46,6 +47,10 @@ class CustomStableDiffusionTraining:
             configs["model"]["noise_scheduler"]["name"],
             **configs["model"]["noise_scheduler"]["args"]
         )
+        self.tokenizer = CLIPTokenizer.from_pretrained(
+            configs["model"]["tokenizer"]["name"],
+            subfolder=configs["model"]["tokenizer"]["subfolder"]
+        )
         self.optimizer = torch.optim.AdamW(
             self.unet.parameters(),
             lr=configs["training"]["learning_rate"]
@@ -54,6 +59,7 @@ class CustomStableDiffusionTraining:
         self.accelerator = Accelerator(gradient_accumulation_steps=4)
         self.progress_bar = tqdm(range(self.configs["training"]["max_train_steps"]), disable=not self.accelerator.is_local_main_process)
         self.progress_bar.set_description("Steps")
+        self.global_step = 0
 
     def _init_train_loader(self):
         """
@@ -147,10 +153,17 @@ class CustomStableDiffusionTraining:
             if self.accelerator.sync_gradients:
                 for _ in range(self.accelerator.num_processes):
                     self.progress_bar.update(1)
+                    self.global_step += 1
     
                 logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
                 self.progress_bar.set_postfix(**logs)
                 self.accelerator.clip_grad_norm_(unet.parameters(), 1)
+
+            # TODO: Early termination
+            # if exceed max_step size or loss hasnt been improving
+        if self.accelerator.is_main_process:
+            with open(self.configs["output"]["log"]) as ofile:
+                ofile.write(f"{logs}")
 
         self.accelerator.wait_for_everyone()
         return (unet,
@@ -180,7 +193,8 @@ class CustomStableDiffusionTraining:
                                                                                 optimizer,
                                                                                 train_loader,
                                                                                 lr_scheduler)
-        
+            if self.global_step >= self.configs["training"]["max_train_step"]:
+                break
         self._create_pipeline()
         self.accelerator.end_training()
 

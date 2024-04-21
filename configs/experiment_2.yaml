@@ -28,3 +28,4 @@ training:
   max_train_steps: 200
 output:
   model: "/content/drive/MyDrive/projects/metcs777/output/"
+  log: "/content/drive/MyDrive/projects/metcs777/log/"
