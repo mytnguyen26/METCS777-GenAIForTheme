@@ -11,3 +11,4 @@ pillow
 torchvision
 transformers
 tqdm
+pyyaml
