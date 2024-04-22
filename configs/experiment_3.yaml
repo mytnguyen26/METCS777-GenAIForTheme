@@ -16,7 +16,7 @@ model:
       num_train_timesteps: 1500
       steps_offset: 1
 data:
-  path: "/content/drive/MyDrive/projects/metcs777/train_set_large_Harward_Metroplitan_Smithsonian/"
+  path: "/content/drive/MyDrive/projects/metcs777/train_set_palace/"
   # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
   type: "parquet"
 training:
