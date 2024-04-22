@@ -163,3 +163,4 @@ raw_data/*
 research/*
 *.pem
 staged_data/*
+log/*
