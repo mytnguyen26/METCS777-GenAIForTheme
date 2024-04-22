@@ -31,6 +31,11 @@ class CustomStableDiffusionTraining:
         self.accelerator = Accelerator(gradient_accumulation_steps=4,
                                         log_with=LoggerType.TENSORBOARD,
                                         project_dir=configs["output"]["log"])
+
+        print("==========================")
+        print("Process ID:", os.getpid())
+        print("Parent Process ID:", os.getppid())
+        print("==========================")
         scaled_lr = configs["training"]["learning_rate"] * self.accelerator.num_processes
         # init tracker
         if self.accelerator.is_main_process:
@@ -86,7 +91,7 @@ class CustomStableDiffusionTraining:
         if type == "LMSDiscreteScheduler":
             return LMSDiscreteScheduler(**kwargs)
 
-    def _create_pipeline(self):
+    def _create_pipeline(self, unet):
         """
         Once finetune is completed, we can call this method to
         create an upload the pipeline to a shared drive or to the hub
@@ -96,14 +101,14 @@ class CustomStableDiffusionTraining:
             pipeline = StableDiffusionPipeline(
                 text_encoder= self.accelerator.unwrap_model(self.text_encoder),
                 vae=self.vae,
-                unet=self.unet.module if self.accelerator.num_processes >1 else self.unet,
+                unet=unet.module if self.accelerator.num_processes >1 else self.unet,
                 tokenizer=self.tokenizer,
                 scheduler=self.noise_scheduler,
                 safety_checker=None,
                 feature_extractor=None,
             )
-        pipeline.save_pretrained(os.path.join(self.configs['output']['model'],
-                                                f"stable-diffusion-{version}"))
+            pipeline.save_pretrained(os.path.join(self.configs['output']['model'],
+                                                    f"stable-diffusion-{version}"))
 
     def _train_each_epoch(self, unet,
                                 optimizer,
@@ -202,5 +207,5 @@ class CustomStableDiffusionTraining:
                                                                                 lr_scheduler)
             if self.global_step >= self.configs["training"]["max_train_steps"]:
                 break
-        self._create_pipeline()
+        self._create_pipeline(unet)
         self.accelerator.end_training()
