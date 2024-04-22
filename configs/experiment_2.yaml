@@ -1,15 +1,15 @@
 version: 2
 model:
   unet:
-    name: "runwayml/stable-diffusion-v1-5"
+    pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
     subfolder: "unet"
   vae:
-    name: "runwayml/stable-diffusion-v1-5"
+    pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
     subfolder: "vae"
   clip:
-    name: "openai/clip-vit-large-patch14"
+    pretrained_model_name_or_path: "openai/clip-vit-large-patch14"
   tokenizer:
-    name: "openai/clip-vit-large-patch14"
+    pretrained_model_name_or_path: "openai/clip-vit-large-patch14"
   noise_scheduler:
     name: "LMSDiscreteScheduler"
     args:

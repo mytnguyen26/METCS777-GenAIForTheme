@@ -32,24 +32,20 @@ class CustomStableDiffusionTraining:
         self.weight_dtype = torch.float32
         self.train_loader = self._init_train_loader()
         self.unet = UNet2DConditionModel.from_pretrained(
-            configs["model"]["unet"]["name"],
-            subfolder=configs["model"]["unet"].get("subfolder")
+            **configs["model"]["unet"]
         )
         self.vae = AutoencoderKL.from_pretrained(
-            configs["model"]["vae"]["name"],
-            subfolder=configs["model"]["vae"].get("subfolder")
+            **configs["model"]["vae"]
         )
         self.text_encoder = CLIPTextModel.from_pretrained(
-            configs["model"]["clip"]["name"],
-            subfolder=configs["model"]["clip"].get("subfolder")
+            **configs["model"]["clip"]
+        )
+        self.tokenizer = CLIPTokenizer.from_pretrained(
+            **configs["model"]["tokenizer"]
         )
         self.noise_scheduler = self._get_noise_scheduler(
             configs["model"]["noise_scheduler"]["name"],
             **configs["model"]["noise_scheduler"]["args"]
-        )
-        self.tokenizer = CLIPTokenizer.from_pretrained(
-            configs["model"]["tokenizer"]["name"],
-            subfolder=configs["model"]["tokenizer"].get("subfolder")
         )
         self.optimizer = torch.optim.AdamW(
             self.unet.parameters(),
@@ -63,7 +59,7 @@ class CustomStableDiffusionTraining:
 
     def _init_train_loader(self):
         """
-        
+        TODO
         """
         train_set = load_dataset(self.configs["data"]["type"],\
                                  data_dir=self.configs["data"]["path"])
