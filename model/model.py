@@ -22,12 +22,22 @@ from transformers import (
 import torch
 import torch.nn.functional as F
 from accelerate import Accelerator
+from accelerate.utils import LoggerType
 from tqdm.auto import tqdm
-
 from .utils import collate_fn
 
 class CustomStableDiffusionTraining:
     def __init__(self, configs: Dict):
+        self.accelerator = Accelerator(gradient_accumulation_steps=4,
+                                        log_with=LoggerType.TENSORBOARD,
+                                        project_dir=configs["output"]["log"])
+        scaled_lr = configs["training"]["learning_rate"] * self.accelerator.num_processes
+        # init tracker
+        if self.accelerator.is_main_process:
+            self.accelerator.init_trackers("genai-for-theme",
+            config={"num_iterations": configs["training"]["max_train_steps"],
+            "learning_rate": scaled_lr})
+ 
         self.configs: Dict = configs
         self.weight_dtype = torch.float32
         self.train_loader = self._init_train_loader()
@@ -49,11 +59,11 @@ class CustomStableDiffusionTraining:
         )
         self.optimizer = torch.optim.AdamW(
             self.unet.parameters(),
-            lr=configs["training"]["learning_rate"]
+            lr=scaled_lr
         )
         self.lr_scheduler = torch.optim.lr_scheduler.ConstantLR(self.optimizer)
-        self.accelerator = Accelerator(gradient_accumulation_steps=4)
-        self.progress_bar = tqdm(range(self.configs["training"]["max_train_steps"]), disable=not self.accelerator.is_local_main_process)
+        self.progress_bar = tqdm(range(self.configs["training"]["max_train_steps"]),
+                                disable=not self.accelerator.is_local_main_process)
         self.progress_bar.set_description("Steps")
         self.global_step = 0
 
@@ -154,6 +164,7 @@ class CustomStableDiffusionTraining:
                 logs = {"loss": loss.detach().item(), "lr": self.lr_scheduler.get_last_lr()[0]}
                 self.progress_bar.set_postfix(**logs)
                 self.accelerator.clip_grad_norm_(unet.parameters(), 1)
+                self.accelerator.log(logs, step=self.global_step)
 
             # TODO: Early termination
             # if exceed max_step size or loss hasnt been improving
@@ -193,6 +204,3 @@ class CustomStableDiffusionTraining:
                 break
         self._create_pipeline()
         self.accelerator.end_training()
-
-    
-            
