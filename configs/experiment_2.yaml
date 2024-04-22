@@ -7,13 +7,11 @@ model:
     name: "runwayml/stable-diffusion-v1-5"
     subfolder: "vae"
   clip:
-    name: "runwayml/stable-diffusion-v1-5"
-    subfolder: "text_encoder"
+    name: "openai/clip-vit-large-patch14"
   tokenizer:
-    name: "runwayml/stable-diffusion-v1-5"
-    subfolder: "tokenizer"
+    name: "openai/clip-vit-large-patch14"
   noise_scheduler:
-    name: "PNDMScheduler"
+    name: "LMSDiscreteScheduler"
     args:
       num_train_timesteps: 1500
       steps_offset: 1
