@@ -161,9 +161,9 @@ class CustomStableDiffusionTraining:
 
             # TODO: Early termination
             # if exceed max_step size or loss hasnt been improving
-        if self.accelerator.is_main_process:
-            with open(self.configs["output"]["log"]) as ofile:
-                ofile.write(f"{logs}")
+        # if self.accelerator.is_main_process:
+        #     with open(self.configs["output"]["log"]) as ofile:
+        #         ofile.write(f"{logs}")
 
         self.accelerator.wait_for_everyone()
         return (unet,
