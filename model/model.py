@@ -193,7 +193,7 @@ class CustomStableDiffusionTraining:
                                                                                 optimizer,
                                                                                 train_loader,
                                                                                 lr_scheduler)
-            if self.global_step >= self.configs["training"]["max_train_step"]:
+            if self.global_step >= self.configs["training"]["max_train_steps"]:
                 break
         self._create_pipeline()
         self.accelerator.end_training()
