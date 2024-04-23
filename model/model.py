@@ -6,7 +6,7 @@ used the reference
 """
 from typing import Any, Dict, Tuple
 import os
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 
 # diffusers model
 from diffusers import (
@@ -96,9 +96,7 @@ class CustomStableDiffusionTraining:
         from a path, configured in `./configs/experiment.yaml` file.
         Then, instantiate the train_loader to be used in the `_train_each_epoch()` loop
         """
-        train_set = load_dataset(self.configs["data"]["type"],\
-                                 data_dir=self.configs["data"]["path"])
-        train_set = train_set["train"]
+        train_set = load_from_disk(self.configs["data"]["path"])
         return torch.utils.data.DataLoader(train_set,
                                            batch_size=self.configs["training"]["batch_size"],
                                            shuffle=True, collate_fn=collate_fn, num_workers=2)
