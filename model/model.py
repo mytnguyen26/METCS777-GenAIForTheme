@@ -3,7 +3,7 @@ This module has the custom Stable Diffusions Training Configuration and pipeline
 """
 from typing import Any, Dict
 import os
-from datasets import load_dataset
+from datasets import load_dataset, load_from_disk
 
 # diffusers model
 from diffusers import (
@@ -71,9 +71,7 @@ class CustomStableDiffusionTraining:
         """
         TODO
         """
-        train_set = load_dataset(self.configs["data"]["type"],\
-                                 data_dir=self.configs["data"]["path"])
-        train_set = train_set["train"]
+        train_set = load_from_disk(self.configs["data"]["path"])
         return torch.utils.data.DataLoader(train_set,
                                            batch_size=self.configs["training"]["batch_size"],
                                            shuffle=True, collate_fn=collate_fn, num_workers=2)
