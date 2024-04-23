@@ -9,6 +9,10 @@ sentence-transformers
 accelerate
 pillow
 torchvision
+tensorboard
 transformers
 tqdm
 pyyaml
+
+# For downloading from google drive
+gdown

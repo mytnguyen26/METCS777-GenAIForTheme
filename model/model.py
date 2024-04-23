@@ -1,7 +1,10 @@
 """
 This module has the custom Stable Diffusions Training Configuration and pipeline
+To understand the architecture of Stable Diffusions and the training process, we
+used the reference
+- https://huggingface.co/blog/stable_diffusion#how-does-stable-diffusion-work
 """
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 import os
 from datasets import load_dataset, load_from_disk
 
@@ -28,9 +31,29 @@ from .utils import collate_fn
 
 class CustomStableDiffusionTraining:
     def __init__(self, configs: Dict):
+        """
+        instantiate this instance of CustomStableDiffusionTraining with
+        - an Accelerator
+        - components of Stable Diffusion model:
+            - a CLIPTokenizer: for translating caption text to the embedding space
+            - a VAE: map the image to a Latent space using the model's encoder
+            - a CLIPTextModel: for generating caption's embedding hidden state, which is
+            used to conditioned the training process
+            - a UNET: is the model we need to finetune (thus set to train mode).
+            - a noise scheduler: for denoising the noisy latent produced by UNET
+            back to the images
+        - an optimizer
+        - a learning-rate scheduler
+        :param configs: is a Dictionary parsed from `./configs/experiment.yaml` file
+        """
         self.accelerator = Accelerator(gradient_accumulation_steps=4,
                                         log_with=LoggerType.TENSORBOARD,
                                         project_dir=configs["output"]["log"])
+
+        print("==========================")
+        print("Process ID:", os.getpid())
+        print("Parent Process ID:", os.getppid())
+        print("==========================")
         scaled_lr = configs["training"]["learning_rate"] * self.accelerator.num_processes
         # init tracker
         if self.accelerator.is_main_process:
@@ -69,7 +92,9 @@ class CustomStableDiffusionTraining:
 
     def _init_train_loader(self):
         """
-        TODO
+        Call the Dataset.load_dataset api to download `.parquet` train dataset
+        from a path, configured in `./configs/experiment.yaml` file.
+        Then, instantiate the train_loader to be used in the `_train_each_epoch()` loop
         """
         train_set = load_from_disk(self.configs["data"]["path"])
         return torch.utils.data.DataLoader(train_set,
@@ -77,6 +102,10 @@ class CustomStableDiffusionTraining:
                                            shuffle=True, collate_fn=collate_fn, num_workers=2)
 
     def _get_noise_scheduler(self, type: str, **kwargs):
+        """
+        instantiate the the Noise Scheduler depending on the noise_scheduler.name
+        in `./configs/experiment.yaml`
+        """
         if type == "PNDMScheduler":
             return PNDMScheduler(**kwargs)
         if type == "DDIMScheduler":
@@ -84,33 +113,42 @@ class CustomStableDiffusionTraining:
         if type == "LMSDiscreteScheduler":
             return LMSDiscreteScheduler(**kwargs)
 
-    def _create_pipeline(self):
+    def _create_pipeline(self, unet):
         """
-        Once finetune is completed, we can call this method to
-        create an upload the pipeline to a shared drive or to the hub
+        Once finetune is completed, we can call this method to create an upload
+        the pipeline to a shared drive or to the hub. The ouput location if configured
+        in ./configs/experiment.yaml output.model
+        :param unet: is the Accelerate's prepared instance of self.unet
         """
         version = self.configs["version"]
         if self.accelerator.is_main_process:
             pipeline = StableDiffusionPipeline(
                 text_encoder= self.accelerator.unwrap_model(self.text_encoder),
                 vae=self.vae,
-                unet=self.unet.module if self.accelerator.num_processes >1 else self.unet,
+                unet=unet.module if self.accelerator.num_processes >1 else self.unet,
                 tokenizer=self.tokenizer,
                 scheduler=self.noise_scheduler,
                 safety_checker=None,
                 feature_extractor=None,
             )
-        pipeline.save_pretrained(os.path.join(self.configs['output']['model'],
-                                                f"stable-diffusion-{version}"))
+            pipeline.save_pretrained(os.path.join(self.configs['output']['model'],
+                                                    f"stable-diffusion-{version}"))
 
     def _train_each_epoch(self, unet,
                                 optimizer,
                                 train_loader,
-                                lr_scheduler):
+                                lr_scheduler) -> Tuple:
         """
+        This method has operations that happen each training epoch
+        :param unet: is the Accelerate's prepared instance of self.unet
         :param optimizer: is the Accelerate's prepared instance of self.optimizer
         :param train_loader: is the Accelerate's prepared instance of self.train_loader
         :param lr_scheduler: is the Accelerate's prepared instance of self.lr_scheduler
+        :return tuple: return back a tuple of (unet, optimizer, train_loader, lr_scheduler) to the caller
+        This training step is referenced and adapted from:
+        - https://github.com/aws-samples/sagemaker-distributed-training-workshop/blob/main/4_stable_diffusion/src/finetune.py
+        - https://github.com/huggingface/diffusers/blob/main/examples/text_to_image/train_text_to_image.py
+
         """
         for step, batch in enumerate(train_loader):
             with self.accelerator.accumulate(unet):
@@ -176,7 +214,18 @@ class CustomStableDiffusionTraining:
                 train_loader,
                 lr_scheduler)
 
-    def train(self):
+    def train(self) -> None:
+        """
+        This function start the training process for Stable Diffusion model.
+        The main operations carried out in the training process are:
+        - Freeze parameters for Variational Auto Encoder model (vae)
+        - Freeze parameters for CLIPText encoding model (text_encoder)
+        - Setup the model to be run on `device` (either CUDA or CPU)
+        - Wrap the Unet model, train_loader, and lr_scheduler with accelerate
+        to prepare for distributed training
+        - Create a StableDiffusionPipeline object and save to the `self.configs.output.model`
+        path, as configured in the `experiment.yaml` file
+        """
         # freeze params
         for params in self.vae.parameters():
             params.requires_grad = False
@@ -200,5 +249,5 @@ class CustomStableDiffusionTraining:
                                                                                 lr_scheduler)
             if self.global_step >= self.configs["training"]["max_train_steps"]:
                 break
-        self._create_pipeline()
+        self._create_pipeline(unet)
         self.accelerator.end_training()
