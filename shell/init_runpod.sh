@@ -1,6 +1,6 @@
 # This script is used to initialize runpod.io server
 # It assumes we have a Pod deployed with 2GPUs
-git clone -b feat-diffusion https://github.com/mytnguyen26/METCS777-GenAIForTheme.git
+git clone -b https://github.com/mytnguyen26/METCS777-GenAIForTheme.git
 export PYTHONPATH="$PYTHONPATH:/workspace/METCS777-GenAIForTheme/"
 cd METCS777-GenAIForTheme
 python -m venv .venv
