@@ -102,7 +102,7 @@ source ./shell/init_runpod.sh
 
 Make sure to create your own `experiment.yaml` file with all the paths configured (refer to option 1 for example)
 
-Finally, in your terminal, run the following command to set up the accelerate config to train. It will ask you smoe questions to correctly configure the training.
+Finally, in your terminal, run the following command to set up the accelerate config to train. It will ask you some questions to correctly configure the training.
 
 ```bash
 accelerate config
@@ -113,6 +113,9 @@ Then, you can finally execute the training in the terminal, as shown in the scre
 accelerate launch --num_processes=2 pipeline/train.py --configs configs/experiment_3.yaml
 ```
 
+![train on runpod](./images/train_on_runpod.png)
+
+For more detail on what are the supported arguments to further configured accelerate, refer to the Accelerate Doc [here](https://huggingface.co/docs/accelerate/basic_tutorials/launch)
 
 ### 4. Alternative options
 The finetuning process can be easily adapt to other training option, such as with Spark MLLib, or SageMaker by using `./pipeline/train.py` script as an entrypoint. However, due to the cost of renting out AWS GPU Instances, we quickly abandoned this idea.
@@ -127,18 +130,12 @@ Evaluation strategy we decided to use for this project is to have human SME as e
 (TODO: The best run we got in terms of EPOCH, loss, batch and image generated)
 
 
-## Developer Install
+## Some additional instructions for Developers
 
-1. Download `aws-cli`
-2. create virtual env
-3. run
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Git Commit and SageMaker instruction
+### Git Commit and SageMaker instruction
 
 To facilitate colaboration, we can push our notebooks and codes to GitHub. Then Sagemaker server (Jupyter Lab) in each individual accounts can pull from our central Github Repository. To setup:
+
 1. In your GitHub setting, create a personal access token, follow instruction [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 2. In AWS console, navigate to SageMaker service -> Notebook -> Git Repository. Follow this intruction from AWS to connect to GitRepository
 ![alt text](/images/sagemaker.png)
@@ -150,6 +147,6 @@ in the notebook cell
 
 https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-notebooks-now-support-git-integration-for-increased-persistence-collaboration-and-reproducibility/
 
-### If you are using the lab
+### If you are using the lab and want to connect to AWS
 1. In your labmodule, get your credentials detail and follow instruction to add to `~/.aws/credentials` config
 ![alt text](./images/image.png)
