@@ -96,7 +96,19 @@ class CustomStableDiffusionTraining:
         from a path, configured in `./configs/experiment.yaml` file.
         Then, instantiate the train_loader to be used in the `_train_each_epoch()` loop
         """
-        train_set = load_from_disk(self.configs["data"]["path"])
+        #
+        try:
+            train_set = load_dataset(self.configs["data"]["type"],\
+                                    data_dir=self.configs["data"]["path"])
+            train_set = train_set["train"]
+        except Exception as e:
+            ### TODO: recommend a permanent fix and refactor this block
+            ### Currently there is issue with loading parquet for Palace,
+            ### So Zhen needs to save the files with dataset.save_to_disk, which
+            ### requires us to load with load_from_disk. This Exception block
+            ### is a temporary fix to load those .arrow dataset in, while maintaining
+            ### the ability to still support loading from parquet.
+            train_set = load_from_disk(self.configs["data"]["path"])
         return torch.utils.data.DataLoader(train_set,
                                            batch_size=self.configs["training"]["batch_size"],
                                            shuffle=True, collate_fn=collate_fn, num_workers=2)
