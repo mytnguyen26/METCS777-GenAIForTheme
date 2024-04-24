@@ -37,17 +37,17 @@ Note that: The image preprocessing steps for this process happened seperately on
 ### 1. Pre-Requisite
 To finetune `stable-diffusion-v1.5`, at least 1 GPU of at least 24GB is required. An example of GPU of this type is L4 from Google Colab Pro. However, for the best result (within reasonable amount of time), also tried distributed training with Huggingface's `accelerate` api on a 2-GPUs instance, each with 48G VRAM (screenshot below). For this option we choose to rent GPU pods from [runpod.io](https://www.runpod.io/). We described the finetuning process below for each option
 
-![alt text](./images/runpod.png)
-
 At the end of this finetuning process, a model pipeline is created saved in the `output`.`model` location in the `experiment_*.yaml` file you configured. This pipeline can be loaded in again for inference, using HuggingFace `StableDiffusionPipeline.from_pretrain()` API
 
-### 2. Fine-tune on Google Colab
+### 2. Option 1: Fine-tune on Google Colab
 
-To run the fine-tuning process on Google Colab Pro, one can use the `./notebook/train_stable_diffusion_with_colab.ipynb` notebook. To configure your own parameter for training, you can reuse or create a new copy of `./configs/experiment_*.yaml` in directory location. The `experiement_*.yaml` file look something like this
+To run the fine-tuning process on Google Colab Pro, one can use the `./examples/train_stable_diffusion_with_colab.ipynb` notebook. To configure your own parameter for training, you can reuse or create a new copy of `./configs/experiment_*.yaml` in directory location. The `experiement_*.yaml` file look something like this
 
 ```python
 ....
 data:
+  # The path to the local drive of the machine, where the training parquet files are stored
+  # this assume you have moved data there before hand
   path: "./train_set_large_Harward_Metroplitan_Smithsonian/"
   # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
   type: "parquet"
@@ -57,6 +57,7 @@ training:
   epochs: 1
   max_train_steps: 2000
 output:
+  # The path where the model ouput will be stored
   model: "./output/"
   log: "./log/"
 ```
@@ -70,8 +71,51 @@ def train():
    .... 
 ```
 
-### 3. Fine-tune on `runpod.io` rented GPU servers
+### 3. Option 2: Fine-tune on runpod.io rented GPU servers
+If you can rent Pods on **Runpod.io**, we recommend at least an instance with 2 GPUs, each with a 48GB of VRAM (so total 96GB). The exact instance we used for finetuning is screenshot below:
 
+![alt text](./images/runpod.png)
+
+Once you deploy your pod, you can choose to connect to it by clicking on Connect button, and choose any of these option:
+- ssh
+- Web terminal
+- Jupyter Lab (recommended if you want a SageMaker-like interative environment)
+
+Next, we need to setup this instance with all the dependencies for training pytorch model with accelerate. Create a new terminal, then you can execute the following shell command one by one
+
+```bash
+git clone https://github.com/mytnguyen26/METCS777-GenAIForTheme.git
+export PYTHONPATH="$PYTHONPATH:/workspace/METCS777-GenAIForTheme/"
+cd METCS777-GenAIForTheme
+python -m venv .venv
+source ./.venv/bin/activate
+pip install -r requirements.txt
+gdown --folder <your train_set.parquet folder URL in google drive, assume that folder is available to the public>
+export CUDA_VISIBLE_DEVICES=0,1
+```
+
+Or, just run the script `init_runpod.sh` (change google drive folder path or remove if you dont use google drive)
+
+```bash
+source ./shell/init_runpod.sh
+```
+
+Make sure to create your own `experiment.yaml` file with all the paths configured (refer to option 1 for example)
+
+Finally, in your terminal, run the following command to set up the accelerate config to train. It will ask you some questions to correctly configure the training.
+
+```bash
+accelerate config
+```
+Then, you can finally execute the training in the terminal, as shown in the screenshot below
+
+```bash
+accelerate launch --num_processes=2 pipeline/train.py --configs configs/experiment_3.yaml
+```
+
+![train on runpod](./images/train_on_runpod.png)
+
+For more detail on what are the supported arguments to further configured accelerate, refer to the Accelerate Doc [here](https://huggingface.co/docs/accelerate/basic_tutorials/launch)
 
 ### 4. Alternative options
 The finetuning process can be easily adapt to other training option, such as with Spark MLLib, or SageMaker by using `./pipeline/train.py` script as an entrypoint. However, due to the cost of renting out AWS GPU Instances, we quickly abandoned this idea.
@@ -86,18 +130,12 @@ Evaluation strategy we decided to use for this project is to have human SME as e
 (TODO: The best run we got in terms of EPOCH, loss, batch and image generated)
 
 
-## Developer Install
+## Some additional instructions for Developers
 
-1. Download `aws-cli`
-2. create virtual env
-3. run
-   ```bash
-   pip install -r requirements.txt
-   ```
-
-## Git Commit and SageMaker instruction
+### Git Commit and SageMaker instruction
 
 To facilitate colaboration, we can push our notebooks and codes to GitHub. Then Sagemaker server (Jupyter Lab) in each individual accounts can pull from our central Github Repository. To setup:
+
 1. In your GitHub setting, create a personal access token, follow instruction [here](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens)
 2. In AWS console, navigate to SageMaker service -> Notebook -> Git Repository. Follow this intruction from AWS to connect to GitRepository
 ![alt text](/images/sagemaker.png)
@@ -109,6 +147,6 @@ in the notebook cell
 
 https://aws.amazon.com/blogs/machine-learning/amazon-sagemaker-notebooks-now-support-git-integration-for-increased-persistence-collaboration-and-reproducibility/
 
-### If you are using the lab
+### If you are using the lab and want to connect to AWS
 1. In your labmodule, get your credentials detail and follow instruction to add to `~/.aws/credentials` config
 ![alt text](./images/image.png)

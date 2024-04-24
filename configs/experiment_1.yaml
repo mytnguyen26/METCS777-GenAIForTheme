@@ -1,24 +1,22 @@
 version: 1
 model:
   unet:
-    name: "runwayml/stable-diffusion-v1-5"
+    pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
     subfolder: "unet"
   vae:
-    name: "runwayml/stable-diffusion-v1-5"
+    pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
     subfolder: "vae"
   clip:
-    name: "runwayml/stable-diffusion-v1-5"
-    subfolder: "text_encoder"
+    pretrained_model_name_or_path: "openai/clip-vit-large-patch14"
   tokenizer:
-    name: "runwayml/stable-diffusion-v1-5"
-    subfolder: "tokenizer"
+    pretrained_model_name_or_path: "openai/clip-vit-large-patch14"
   noise_scheduler:
     name: "PNDMScheduler"
     args:
       num_train_timesteps: 1500
       steps_offset: 1
 data:
-  path: "./staged_data/"
+  path: "./train_set/"
   # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
   type: "parquet"
 training:
@@ -28,3 +26,4 @@ training:
   max_train_steps: 200
 output:
   model: "./output/"
+  log: "./log/"

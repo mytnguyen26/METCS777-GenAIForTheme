@@ -1,5 +1,5 @@
 ## This version works on runpod.io server with 2xL4 GPUs
-version: 3
+version: 4.1
 model:
   unet:
     pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
@@ -17,14 +17,14 @@ model:
       num_train_timesteps: 2000
       steps_offset: 1
 data:
-  path: "./train_set_large_Harward_Metroplitan_Smithsonian/"
+  path: "./train_set_harvard_met_smithsonian/"
   # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
   type: "parquet"
 training:
-  learning_rate: 0.0001
+  learning_rate: 0.00001
   batch_size: 16
-  epochs: 1
-  max_train_steps: 2000
+  epochs: 40
+  max_train_steps: 4000
 output:
   model: "./output/"
   log: "./log/"
