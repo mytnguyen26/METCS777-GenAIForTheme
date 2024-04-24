@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools >= 61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "genai-for-theme"
+description = "This is a BU MET CS777 final project, a finetuned Stable Diffusion model"
+version = "2024.0.0"
+requires-python = ">= 3.10"
+authors = [
+  {name = "My Nguyen", email = "mytng@bu.edu"},
+]
+maintainers = [
+  {name = "My Nguyen", email = "mytng@bu.edu"}
+]
+readme = "README.md"
+
+[tool.setuptools]
+py-modules = []
