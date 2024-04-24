@@ -91,7 +91,7 @@ python -m venv .venv
 source ./.venv/bin/activate
 pip install -r requirements.txt
 gdown --folder <your train_set.parquet folder URL in google drive, assume that folder is available to the public>
-export $CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0,1
 ```
 
 Or, just run the script `init_runpod.sh` (change google drive folder path or remove if you dont use google drive)
