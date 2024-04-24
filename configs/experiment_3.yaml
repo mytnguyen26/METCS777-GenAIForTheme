@@ -1,9 +1,5 @@
-<<<<<<< HEAD
 ## This version works on runpod.io server with 2xL4 GPUs
 version: 3
-=======
-version: 2
->>>>>>> dbe4f0bb816e3ea58c86a341b06e23d9502f0e41
 model:
   unet:
     pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"

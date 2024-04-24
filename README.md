@@ -41,7 +41,7 @@ At the end of this finetuning process, a model pipeline is created saved in the 
 
 ### 2. Option 1: Fine-tune on Google Colab
 
-To run the fine-tuning process on Google Colab Pro, one can use the `./notebook/train_stable_diffusion_with_colab.ipynb` notebook. To configure your own parameter for training, you can reuse or create a new copy of `./configs/experiment_*.yaml` in directory location. The `experiement_*.yaml` file look something like this
+To run the fine-tuning process on Google Colab Pro, one can use the `./examples/train_stable_diffusion_with_colab.ipynb` notebook. To configure your own parameter for training, you can reuse or create a new copy of `./configs/experiment_*.yaml` in directory location. The `experiement_*.yaml` file look something like this
 
 ```python
 ....
