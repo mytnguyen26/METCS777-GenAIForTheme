@@ -9,6 +9,8 @@ version = "2024.0.0"
 requires-python = ">= 3.10"
 authors = [
   {name = "My Nguyen", email = "mytng@bu.edu"},
+  {name = "Chuong Nguyen", email = "chuongng@bu.edu"},
+  {name = "Zhen Cao", email = "caoz229@bu.edu"}
 ]
 maintainers = [
   {name = "My Nguyen", email = "mytng@bu.edu"}
