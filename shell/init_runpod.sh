@@ -7,4 +7,4 @@ python -m venv .venv
 source ./.venv/bin/activate
 pip install -r requirements.txt
 gdown --folder https://drive.google.com/drive/u/0/folders/1UF9OXiONIDlI3dQfC8FQbDsJEUluOrG4
-export $CUDA_VISIBLE_DEVICES=0,1
+export CUDA_VISIBLE_DEVICES=0,1

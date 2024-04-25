@@ -1,4 +1,5 @@
-version: 1
+## This version works on runpod.io server with 2xL4 GPUs
+version: 4
 model:
   unet:
     pretrained_model_name_or_path: "runwayml/stable-diffusion-v1-5"
@@ -11,19 +12,19 @@ model:
   tokenizer:
     pretrained_model_name_or_path: "openai/clip-vit-large-patch14"
   noise_scheduler:
-    name: "PNDMScheduler"
+    name: "DDIMScheduler"
     args:
-      num_train_timesteps: 1500
+      num_train_timesteps: 2000
       steps_offset: 1
 data:
-  path: "./train_set/"
+  path: "./train_set_harvard_met_smithsonian/"
   # Other possible type are imagefolder, csv, ... (which is coming from huggingface load_dataset())
   type: "parquet"
 training:
-  learning_rate: 0.01
-  batch_size: 4
-  epochs: 10
-  max_train_steps: 200
+  learning_rate: 0.00001
+  batch_size: 16
+  epochs: 20
+  max_train_steps: 4000
 output:
   model: "./output/"
   log: "./log/"
