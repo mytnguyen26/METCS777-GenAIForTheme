@@ -4,12 +4,14 @@ This repository is a project for METCS777. This project focuses on fine-tuning G
 ## Data Collection and preprocessing
 ### 1. Data Collection
 The data we used for this projects are obtained via webscrapping (using `beautifulSoup` and `Selenium`) from the following sources:
-- Harvard Museum: https://api.harvardartmuseums.org
-- Metropolitan Museum: https://collectionapi.metmuseum.org/public/collection/v1/objects/
-- Smithsonian Museum: https://api.si.edu/openaccess/api/v1.0/search
+- Harvard Museum: https://api.harvardartmuseums.org - https://github.com/harvardartmuseums/api-docs
+- Metropolitan Museum: https://collectionapi.metmuseum.org/public/collection/v1/objects/ - https://github.com/metmuseum/openaccess
+- Smithsonian Museum: https://api.si.edu/openaccess/api/v1.0/search - https://edan.si.edu/openaccess/apidocs/
 - Palace Museum: https://digicol.dpm.org.cn
 
 After scrapping, this set of data is updated to the project [Shared Drive](https://drive.google.com/drive/folders/1J70ptj8vnAED8X9K9nGmTsjAirwJY0xR?usp=sharing) for further proccessing in EMR.
+
+Our dataset, comprising over 4,600 paintings, was collected from four sources: the Harvard Art Museum API, Metropolitan Museum of Art Open Access, Smithsonian Institution API, and Palace Museum API (though the Palace Museum data was not used due to format disparity). The Harvard and Smithsonian APIs provide JSON-formatted data with general information, content details, descriptive attributes, and online media links, including high-resolution JPEG images. The Metropolitan Museum's metadata, available in CSV format via GitHub, contains unrestricted data, similar to the other museums. Python code was used to extract metadata and download painting data files, with 93 artworks from Harvard Museum, 984 from the Metropolitan Museum, and 567 from the Smithsonian Museum. Despite attempting multiple combinations of attributes for metadata, including title, artist, period, material, type, and tags, noise from lengthy captions distorted the model's performance, leading to a focus on shorter, more representative captions constructed from titles or concatenated tags. Approximately 300 paintings lacked usable caption details and required manual labeling.
 
 ### 2. Preprocessing
 There are 2 preprocessing steps that need to happen on the raw data just scrapped, the caption processing and image preprocessing.
